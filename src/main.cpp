@@ -65,12 +65,14 @@ int main() {
 
 	int widtex, hegtex, nrChannels;
 	unsigned char* byte = stbi_load("assets/Sprite-0001.png", &widtex, &hegtex, &nrChannels, 0);
-	/*if (byte == NULL)
-	{
+	if (byte == NULL){
 		std::cout << "Failed to load texture \n";
-		std::cout << "stbi_load returned NULL \n";
-		return -1;
-	}*/
+		std::cout << "The ERROR could be: \n";
+		std::cout << "	- Texture file not found or invalid. \n";
+		std::cout << "	- Check whether the assets(/src/assets) folder is located where the build. \n";
+		
+		return 0;
+	}
 
 	GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
 	glTexImage2D(GL_TEXTURE_2D, 0, format, widtex, hegtex, 0, format, GL_UNSIGNED_BYTE, byte);
