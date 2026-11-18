@@ -50,7 +50,7 @@ GLuint loadTexture(const char* path)
 
 int main() {
 	
-
+	
 
 	float Width_Window = 600.0f;
 	float Height_Window = 800.0f;
@@ -81,6 +81,7 @@ int main() {
 	VBO VBO1(vertice, sizeof(vertice));
 	EBO EBO1(indices, sizeof(indices));
 
+
 	unsigned int Texture;
 	glGenTextures(1, &Texture);
 	glBindTexture(GL_TEXTURE_2D, Texture);
@@ -93,8 +94,9 @@ int main() {
 	int widtex, hegtex, nrChannels;
 	GLuint birdTex = loadTexture("assets/Sprite-0001.png");
 	GLuint bgTex = loadTexture("assets/background.png");
-	unsigned char* byte = stbi_load("assets/background.png", &widtex, &hegtex, &nrChannels, 0);
-	if (byte == NULL){
+	GLuint pipeTex = loadTexture("assets/pipe.png");
+	GLuint pipe2Tex = loadTexture("assets/pipe2.png");
+	if (birdTex == NULL || bgTex == NULL || pipeTex == NULL || pipe2Tex == NULL){
 		std::cout << "Failed to load texture \n";
 		std::cout << "The ERROR could be: \n";
 		std::cout << "	- Texture file not found or invalid. \n";
@@ -103,9 +105,6 @@ int main() {
 		return 0;
 	}
 
-	GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-	glTexImage2D(GL_TEXTURE_2D, 0, format, widtex, hegtex, 0, format, GL_UNSIGNED_BYTE, byte);
-	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_set_flip_vertically_on_load(true);
 
 	VAO1.LinkAttrib(VBO1, 0, 2, GL_FLOAT, 4 * sizeof(float), (void*)0);
@@ -115,18 +114,29 @@ int main() {
 	VBO1.Unbind();
 	EBO1.Unbind();
 
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> dist(-100, 250);
+	std::cout << dist(gen);
+	
+
 	glm::mat4 model = glm::mat4(1.0f);
 
 
 	glm::mat4 proj = glm::ortho(0.0f, Width_Window, 0.0f, Height_Window, -1.0f, 1.0f);
 
 	const float birdX = 200.0f;
-	float birdY = 300.0f;
+	float birdY = 500.0f;
 	float velocidadeY = 0.0f;
 	const float gravidade = -1300.0f;   //-1800.0f 
 	const float jump = 400.0f;  //600.0f
 	const float tamanho = 32.0f;
-	bool spacefoiPressed = false;
+	bool spacefoiPressed = false;	
+	float pipeposition = 800.0f;
+	GLfloat position = dist(gen);
+	GLfloat positionup = position + 800;
+	int pontua = 0;
+	float decrease = 0.1f;
 
 	
 
@@ -143,7 +153,7 @@ int main() {
 
 	while (!glfwWindowShouldClose(window))
 	{
-		//------------------------Pulo-e-Gravidade-------------------------//
+		//-------------------------------------------------------------------//
 		float currTime = glfwGetTime();
 		float delta = currTime - lastTime;
 		lastTime = currTime;
@@ -168,6 +178,17 @@ int main() {
 			birdY = Height_Window - tamanho;
 			velocidadeY = 0.0f;
 		}
+		
+		pipeposition = pipeposition-decrease;
+		if (pipeposition < -100.0f) {
+			system("cls");
+			decrease = decrease + 0.01f;
+			std::cout << "Speed: " << decrease << "\n";
+			pipeposition = 800.0f;
+			position = dist(gen);
+			positionup = position + 800;
+		}
+		
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(birdX, birdY, 0.0f));
@@ -192,13 +213,31 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, bgTex);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-		//------------------------------Bird-------------------------------//
+		//-----------------------------------------------------------------//
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(birdX, birdY, 0.0f));
 		model = glm::rotate(model, glm::radians(-180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glBindTexture(GL_TEXTURE_2D, birdTex);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		//-----------------------------------------------------------------//down pipe
+		
+		glm::mat4 pipeModeldown = glm::mat4(1.0f);
+		pipeModeldown = glm::translate(pipeModeldown, glm::vec3(pipeposition, position, 0.0f));
+		pipeModeldown = glm::scale(pipeModeldown, glm::vec3(2.0f, 10.0f, 0.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(pipeModeldown));
+		glBindTexture(GL_TEXTURE_2D, pipe2Tex);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		//------------------------------------------------------------------//up pipe
+		
+		glm::mat4 pipeModelup = glm::mat4(1.0f);
+		pipeModelup = glm::translate(pipeModelup, glm::vec3(pipeposition, positionup, 0.0f));
+		pipeModelup = glm::scale(pipeModelup, glm::vec3(2.0f, 10.0f, 0.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(pipeModelup));
+		glBindTexture(GL_TEXTURE_2D, pipeTex);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		//------------------------------------------------------------------//
