@@ -7,6 +7,7 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <random>
 
 #include "VAO.h"
 #include "VBO.h"
