@@ -20,15 +20,18 @@ GLuint indices[] =
 		2, 3, 0,
 };
 
+bool colide(float ax, float ay, float ahw, float ahh,
+	float bx, float by, float bhw, float bhh)
+{
+	return fabs(ax - bx) < (ahw + bhw) &&
+		fabs(ay - by) < (ahh + bhh);
+}
+
 GLuint loadTexture(const char* path)
 {
 	int w, h, ch;
 	stbi_set_flip_vertically_on_load(false);
 	unsigned char* data = stbi_load(path, &w, &h, &ch, 0);
-	if (!data) {
-		std::cout << "Falha ao carregar: " << path << "\n";
-		return 0;
-	}
 
 	GLenum format = (ch == 4) ? GL_RGBA : GL_RGB;
 
@@ -43,7 +46,6 @@ GLuint loadTexture(const char* path)
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage2D(GL_TEXTURE_2D, 0, format, w, h, 0, format, GL_UNSIGNED_BYTE, data);
-
 	stbi_image_free(data);
 	return id;
 }
@@ -117,13 +119,20 @@ int main() {
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_int_distribution<> dist(-100, 250);
-	std::cout << dist(gen);
+	float direction1 = dist(gen);
+
+	std::random_device random;
+	std::mt19937 gene(random());
+	std::uniform_int_distribution<> diste(-100, 250);
+	float direction2 = diste(gen);
 	
 
 	glm::mat4 model = glm::mat4(1.0f);
 
 
 	glm::mat4 proj = glm::ortho(0.0f, Width_Window, 0.0f, Height_Window, -1.0f, 1.0f);
+
+
 
 	const float birdX = 200.0f;
 	float birdY = 500.0f;
@@ -133,9 +142,12 @@ int main() {
 	const float tamanho = 32.0f;
 	bool spacefoiPressed = false;	
 	float pipeposition = 800.0f;
-	GLfloat position = dist(gen);
+	float pipeposition2 = 800.0f + 400.0f;
+	GLfloat position = direction1;
 	GLfloat positionup = position + 800;
-	int pontua = 0;
+	GLfloat position2 = direction1;
+	GLfloat positionup2 = position + 800;
+	int pontua = 1;
 	float decrease = 0.1f;
 
 	
@@ -150,6 +162,23 @@ int main() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	float lastTime = glfwGetTime();
+
+	const float pipeHW = 64.0f;  
+	const float pipeHH = 320.0f;  
+	const float birdHit = 20.0f;
+
+	auto resetGame = [&]() {
+		birdY = 500.0f;
+		velocidadeY = 0.0f;
+		pipeposition = 800.0f;
+		pipeposition2 = 800 +400.0f;
+		decrease = 0.1f;
+		pontua = 1;
+		position = direction1;
+		positionup = position + 800;
+		position2 = direction2;
+		positionup2 = position2 + 800;
+		};
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -180,14 +209,39 @@ int main() {
 		}
 		
 		pipeposition = pipeposition-decrease;
+		pipeposition2 = pipeposition2 - decrease;
 		if (pipeposition < -100.0f) {
 			system("cls");
-			decrease = decrease + 0.01f;
+			pontua++;
+			decrease = decrease + 0.004f;
+			std::cout << "Points: " << pontua << "\n";
 			std::cout << "Speed: " << decrease << "\n";
+			std::cout << direction1;
 			pipeposition = 800.0f;
-			position = dist(gen);
+			position = direction1;
 			positionup = position + 800;
+			std::mt19937 gen(rd());
+			std::uniform_int_distribution<> dist(-100, 250);
+			direction1 = dist(gen);
 		}
+		if (pipeposition2 < -100.0f) {
+			system("cls");
+			pontua++;
+			decrease = decrease + 0.004f;
+			std::cout << "Points: " << pontua << "\n";
+			std::cout << "Speed: " << decrease << "\n";
+			std::cout << direction2;
+			pipeposition2 = 800.0f;
+			position2 = direction2;
+			positionup2 = position2 + 800;
+
+			std::mt19937 gene(random());
+			direction2 = diste(gen);
+		}
+		if (pontua % 20 == 0) {
+		
+		}
+
 		
 
 		model = glm::mat4(1.0f);
@@ -239,6 +293,31 @@ int main() {
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(pipeModelup));
 		glBindTexture(GL_TEXTURE_2D, pipeTex);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		//-----------------------------------------------------------------//down pipe 2
+
+		glm::mat4 pipeModeldown2 = glm::mat4(1.0f);
+		pipeModeldown2 = glm::translate(pipeModeldown2, glm::vec3(pipeposition2, position2, 0.0f));
+		pipeModeldown2 = glm::scale(pipeModeldown2, glm::vec3(2.0f, 10.0f, 0.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(pipeModeldown2));
+		glBindTexture(GL_TEXTURE_2D, pipe2Tex);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		//------------------------------------------------------------------//up pipe 2
+
+		glm::mat4 pipeModelup2 = glm::mat4(1.0f);
+		pipeModelup2 = glm::translate(pipeModelup2, glm::vec3(pipeposition2, positionup2, 0.0f));
+		pipeModelup2 = glm::scale(pipeModelup2, glm::vec3(2.0f, 10.0f, 0.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(pipeModelup2));
+		glBindTexture(GL_TEXTURE_2D, pipeTex);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		//------------------------------------------------------------------//
+
+		bool bateu =colide(birdX, birdY, birdHit, birdHit, pipeposition, position, pipeHW, pipeHH) ||colide(birdX, birdY, birdHit, birdHit, pipeposition, positionup, pipeHW, pipeHH) ||colide(birdX, birdY, birdHit, birdHit, pipeposition2, position2, pipeHW, pipeHH) ||colide(birdX, birdY, birdHit, birdHit, pipeposition2, positionup2, pipeHW, pipeHH);
+		if (bateu) {
+			resetGame();
+		}
 
 		//------------------------------------------------------------------//
 
