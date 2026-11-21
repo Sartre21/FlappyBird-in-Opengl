@@ -63,7 +63,7 @@ int main() {
 	glfwInitHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwInitHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow* window = glfwCreateWindow(Width_Window, Height_Window, "OpenGL Window", 0, 0);
+	GLFWwindow* window = glfwCreateWindow(Width_Window, Height_Window, "Flappy Bird", 0, 0);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window \n";
