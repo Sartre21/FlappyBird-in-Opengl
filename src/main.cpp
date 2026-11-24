@@ -57,7 +57,7 @@ int main() {
 	float Width_Window = 600.0f;
 	float Height_Window = 800.0f;
 
-	system("color 5");
+	system("color 3");
 	glfwInit();
 	glfwInitHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwInitHint(GLFW_CONTEXT_VERSION_MINOR, 3);
