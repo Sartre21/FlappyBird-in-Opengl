@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.10)
 project(FlappyBirdOpenGL LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -16,7 +16,7 @@ add_executable(FlappyBird
     src/VBO.cpp
     src/EBO.cpp
     src/glad.c
- "Include/main.h")
+ "Include/main.h"  )
 
 target_include_directories(FlappyBird PRIVATE ${INCLUDE_DIR})
 
@@ -49,12 +49,10 @@ endif()
 # --------------------------------------------------------------------------------------------- #
 add_custom_command(TARGET FlappyBird POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_SOURCE_DIR}/src/Shaders $<TARGET_FILE_DIR:FlappyBird>/Shaders
+            ${CMAKE_SOURCE_DIR}/src/Shaders
+            $<TARGET_FILE_DIR:FlappyBird>/Shaders
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/src/assets
+            $<TARGET_FILE_DIR:FlappyBird>/assets
+    COMMENT "Copiando Shaders e assets para a pasta do executavel"
 )
-
-if(EXISTS ${CMAKE_SOURCE_DIR}/assets)
-    add_custom_command(TARGET FlappyBird POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-                ${CMAKE_SOURCE_DIR}/src/assets $<TARGET_FILE_DIR:FlappyBird>/assets
-    )
-endif()
